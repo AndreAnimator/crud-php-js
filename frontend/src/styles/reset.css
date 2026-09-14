@@ -2,7 +2,7 @@
     box-sizing: border-box;
 }
 
-*:note(dialog) {
+*::note(dialog) {
     margin: 0;
 }
 

@@ -8,7 +8,7 @@ const apiUrl = 'http://localhost:8000/api/users';
 const form = document.getElementById('create-user-form');
 const formError = document.getElementById('form-error');
 const formTitle = document.getElementById('form-title');
-const submitBtn = form.querySelector('button[type="submit"');
+const submitBtn = form.querySelector('button[type="submit"]');
 const cancelBtn = document.getElementById('cancel-edit');
 const usersSection = document.getElementById('users');
 
@@ -66,10 +66,11 @@ usersSection.addEventListener('click', async (event) => {
     if (target.dataset.action === 'delete') {
         const user = getUserFromCard(target);
 
-        if (!confirm('Are you sur you want to delete this user?')) return;
+        if (!confirm('Are you sure you want to delete this user?')) return;
 
         try {
             await deleteUser(apiUrl, user.id);
+            if (editingId === user.id) exitEditMode();
             renderUsers(apiUrl);
         } catch (error) {
             showError(error.message);
@@ -87,9 +88,28 @@ form.addEventListener('submit', async (event) => {
     hideError();
 
     try {
-        await createUser(apiUrl, { name, age, email });
+        if (editingId !== null) {
+            const changed = {};
+            if (name !== originalUser.name) changed.name = name;
+            if (Number(age) !== originalUser.age) changed.age = age;
+            if (email !== originalUser.email) changed.email = email;
 
-        form.reset();
+            if (Object.keys(changed).length === 0) {
+                exitEditMode();
+                return;
+            }
+
+            const allChanged = Object.keys(changed).length === 3;
+            if (allChanged) {
+                await updateUser(apiUrl, editingId, { name, age, email });
+            } else {
+                await patchUser(apiUrl, editingId, changed);
+            }
+        } else {
+            await createUser(apiUrl, { name, age, email });
+        }
+        
+        exitEditMode();
         renderUsers(apiUrl);
     } catch (error) {
         showError(error.message);
