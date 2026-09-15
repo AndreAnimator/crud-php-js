@@ -3,9 +3,6 @@ FROM php:8.3-cli
 WORKDIR /app
 
 COPY src/ src/
-COPY data/ data/
-
-RUN chmod -R 777 data/
 
 EXPOSE 80
 

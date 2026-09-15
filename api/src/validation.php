@@ -1,5 +1,18 @@
 <?php
 
+function validateUserId(mixed $id): ?string
+{
+    if ($id === null || $id === '') {
+        return 'User id is required';
+    }
+
+    if (!is_string($id) || !ctype_digit($id)) {
+        return 'User id must be a positive integer';
+    }
+
+    return null;
+}
+
 function validateRequiredFields(array $input, array $fields): ?string
 {
     $missing = [];
@@ -11,7 +24,9 @@ function validateRequiredFields(array $input, array $fields): ?string
     }
 
     if (!empty($missing)) {
-        return implode('. ', $missing) . ' are required';
+        $verb = count($missing) === 1 ? ' is required' : 'are required';
+
+        return implode('. ', $missing) . $verb;
     }
 
     return null;
@@ -20,13 +35,17 @@ function validateRequiredFields(array $input, array $fields): ?string
 function validateUserFields(array $input): ?string
 {
     if (isset($input['name'])) {
+        if (!is_string($input['name'])) {
+            return 'Name must be a String';
+        }
+
         $name = trim($input['name']);
 
-        if ($name = '') {
+        if ($name === '') {
             return 'Name cannot be empty';
         }
 
-        if (strlen($name) > 100) {
+        if (mb_strlen($name) > 100) {
             return 'Name must be at most 100 characters';
         }
     }
@@ -44,6 +63,9 @@ function validateUserFields(array $input): ?string
     }
 
     if (isset($input['email'])) {
+        if (!is_string($input['email'])) {
+            return 'Email must be a string';
+        }
         if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
             return 'Invalid email format';
         }
